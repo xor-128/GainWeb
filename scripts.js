@@ -17,7 +17,7 @@ var gain = {
             var category = playlist_json.playlist[i].contentCategory?.toLowerCase();
             
 			if(category == undefined)
-							category = "";
+				category = "";
 							
 			if(category?.indexOf(input) == -1 && title.indexOf(input) == -1 && tags.indexOf(input) == -1 && search_text != "")
 			{
@@ -98,7 +98,7 @@ var gain = {
 			var category = data.playlist[i].contentCategory;
             
 			if(category == undefined)
-							category = "";
+				category = "";
 
             var div = gain.get_div(i, data.playlist[i].image, data.playlist[i].title, category,data.playlist[i].description, links);
 		    
@@ -131,7 +131,7 @@ var gain = {
 		if(!gain.load_parser())
 		{
 			set_preloader_text("Bir hata oluştu. Sayfayı yeniden yükleyin.");
-			return
+			return;
 		}
 
 		set_preloader_text("Liste yüklendi.");
