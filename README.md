@@ -1,7 +1,7 @@
 # GainWeb
 Gain.TV Resmi olmayan web uygulaması.
 
-Canlı test-sunucusu: 
+Canlı test-sunucusu: http://xor-yt.ml/gain/
 
 # Özellikler  
  - Basit search sistemi
