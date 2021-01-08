@@ -72,20 +72,19 @@ var gain = {
 				
 			var div = gain.get_div("search-item", data.playlist[i].image, data.playlist[i].title, category,data.playlist[i].description, links);
 		    
+			div.css('opacity', 0);
+			
 		    $("main").append(div);
 		}
 		
+		$('main').children('section').each(function () {
+			if($(this).hasClass('search-item'))
+			{
+				$(this).delay(300).animate({opacity: 1.0});
+			}
+		});
 		
 		$('#preloader').delay(100).fadeOut('fast');
-
-		/*
-		var title = main_playlist_json.playlist[i].title.toLowerCase();
-		var tags = main_playlist_json.playlist[i].tags?.toLowerCase();
-		var category = main_playlist_json.playlist[i].contentCategory?.toLowerCase();
-		
-		var data = gain.download_json_data(gain.get_page_url('1GaoV3X7') + "?search=" + urlencode(search_text));
-		
-		*/
 	},
 	
 	get_div: function(type, image_url, video_title, category, video_desc, links)
@@ -171,7 +170,6 @@ var gain = {
 
 	get_page_url: function(key)
 	{
-		//Gizli playlist url'si. Değişebilir.
 		return `http://cdn.jwplayer.com/v2/playlists/${key}`;
 	},
 	
