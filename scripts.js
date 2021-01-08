@@ -21,6 +21,11 @@ var gain = {
 	filter_list: function()
 	{
         var search_text = $('#search-input').val();
+		
+		if(search_text.length <= 0) return;
+		
+		$('#preloader').fadeIn('fast');
+		set_preloader_text('Liste yükleniyor.');
 
 		$('main').children('section').each(function () {
 			if($(this).hasClass('main-feed'))
@@ -39,6 +44,9 @@ var gain = {
 				else
 					$(this).remove();
 			});
+			
+			$('#preloader').delay(100).fadeOut('fast');
+			
 			return;
 		}
         
@@ -66,6 +74,9 @@ var gain = {
 		    
 		    $("main").append(div);
 		}
+		
+		
+		$('#preloader').delay(100).fadeOut('fast');
 
 		/*
 		var title = main_playlist_json.playlist[i].title.toLowerCase();
@@ -256,11 +267,7 @@ var gain = {
 
 		set_preloader_text("Liste yüklendi.");
 		
-		if ($('#preloader').length) {
-			$('#preloader').delay(100).fadeOut('slow', function() {
-				$(this).remove(); 
-			});
-		}
+		$('#preloader').delay(100).fadeOut('slow');
 	}
 	
 	$(window).on('load', function() {
