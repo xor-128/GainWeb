@@ -13,11 +13,15 @@ var gain = {
 		for(var i = 0; i < playlist_json.playlist.length; i++)
 		{
 			var title = playlist_json.playlist[i].title.toLowerCase();
-            var tags = playlist_json.playlist[i].tags.toLowerCase();
+            var tags = playlist_json.playlist[i].tags?.toLowerCase();
             var category = playlist_json.playlist[i].contentCategory?.toLowerCase();
             
 			if(category == undefined)
 				category = "";
+
+			            
+			if(tags == undefined)
+				tags = "";
 							
 			if(category?.indexOf(input) == -1 && title.indexOf(input) == -1 && tags.indexOf(input) == -1 && search_text != "")
 			{
