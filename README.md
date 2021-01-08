@@ -9,7 +9,7 @@ Canlı test-sunucusu: http://xor-yt.ml/gain/
  - Çoklu kalite seçeneği
 
 # Yapılacaklar
- - Gain.TV login entegreli sistem.
+ - Gain.TV login entegreli sistem. (İptal edildi. Şuan login'in herhangi bir implementasyonu yok uygulama tarafında. Olduğunda ekleyebilirim.)  
  
 # Credit
  - Bootstrap teması: @ThemesGuide - https://github.com/ThemesGuide/bootstrap-themes
