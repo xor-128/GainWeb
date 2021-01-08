@@ -4,58 +4,164 @@ function set_preloader_text(msg)
 };
 
 var gain = {
-	playlist_json: null,
+	main_playlist_json: null,
 	
-	filter_list: function(input)
+	input_changed: function(input)
 	{
-		var search_text = input.toLowerCase();
+		if(input.length > 0) return;
 
-		for(var i = 0; i < playlist_json.playlist.length; i++)
-		{
-			var title = playlist_json.playlist[i].title.toLowerCase();
-            var tags = playlist_json.playlist[i].tags?.toLowerCase();
-            var category = playlist_json.playlist[i].contentCategory?.toLowerCase();
-            
-			if(category == undefined)
-				category = "";
-
-			            
-			if(tags == undefined)
-				tags = "";
-							
-			if(category?.indexOf(input) == -1 && title.indexOf(input) == -1 && tags.indexOf(input) == -1 && search_text != "")
-			{
-				$(`#__${i}`).css("display", "none");
-			}
-            else
-            {
-            	$(`#__${i}`).css("display", "block");
-            }
-		}
+		$('main').children('section').each(function () {
+			if($(this).hasClass('main-feed'))
+				$(this).css("display", "block");
+			else
+				$(this).remove();
+		});
 	},
 	
-	get_div: function(id, image_url, video_title, category, video_desc, links)
+	filter_list: function()
 	{
-		var part_1 = `<section id="__${id}" class="container"><div class="d-flex my-3"><div class="jumbotron w-100 py-5 mx-auto"><div class="row"><div class="img-container border border-dark col-md-4" style=" background-image: url(${image_url});" ></div> <div class="container col-md-8"><h1>${video_title}</h1> <h4>${category}</h4> <p class="lead">${video_desc}</p><div class="stick-to-bottom"> <div class="btn-group"> <button type="button" class="btn btn-danger dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">İzle</button> <div class="dropdown-menu" x-placement="bottom-start" style="position: absolute; transform: translate3d(0px, 38px, 0px); top: 0px; left: 0px; will-change: transform;">`;
-		var part_2 = `</div></div></div></div></div></div></div></section>`;
-		var out = "";
+        var search_text = $('#search-input').val();
+
+		$('main').children('section').each(function () {
+			if($(this).hasClass('main-feed'))
+				$(this).css("display", "none");
+			else
+				$(this).remove();
+		});
 		
-		out = part_1;
+		var data = gain.download_json_data(gain.get_page_url('1GaoV3X7') + "?search=" + encodeURI(search_text));
+        
+        if(data.playlist?.length <= 0) 
+		{
+			$('main').children('section').each(function () {
+				if($(this).hasClass('main-feed'))
+					$(this).css("display", "block");
+				else
+					$(this).remove();
+			});
+			return;
+		}
+        
+        for(var i = 0; i < data.playlist.length; i++)
+		{
+			var links = [];
+
+            for(var it = 1; it < data.playlist[i].sources.length; it++)
+            {
+            	if(data.playlist[i].sources[it].type == "video/mp4")
+            	    links.push({link: data.playlist[i].sources[it].file, title: data.playlist[i].sources[it].label});
+            }
+			
+			links.sort(function(a, b) {
+			  return parseInt(a.title.substr(0, a.title.length -1)) - parseInt(b.title.substr(0, b.title.length -1));
+			});
+			
+			var title = main_playlist_json.playlist[i].title?.toLowerCase();
+			var category = main_playlist_json.playlist[i].contentCategory?.toLowerCase();
+			
+			if(category == undefined)
+				tags = "";
+				
+			var div = gain.get_div("search-item", data.playlist[i].image, data.playlist[i].title, category,data.playlist[i].description, links);
+		    
+		    $("main").append(div);
+		}
+
+		/*
+		var title = main_playlist_json.playlist[i].title.toLowerCase();
+		var tags = main_playlist_json.playlist[i].tags?.toLowerCase();
+		var category = main_playlist_json.playlist[i].contentCategory?.toLowerCase();
+		
+		var data = gain.download_json_data(gain.get_page_url('1GaoV3X7') + "?search=" + urlencode(search_text));
+		
+		*/
+	},
+	
+	get_div: function(type, image_url, video_title, category, video_desc, links)
+	{
+		var button_group_div = $( "<div/>", {
+			"class": "btn-group"
+		});
+		
+		var dropdown_menu_div =  $( "<div/>", {
+			"class": "dropdown-menu dropdown-menu-grey",
+			"x-placement": "bottom-start"
+		});
+		
+		var download_button =  $( "<button/>", {
+			"type": "button",
+			"class": "btn btn-danger dropdown-toggle",
+			"data-toggle": "dropdown",
+			"aria-haspopup": "true",
+			"aria-expanded": "false",
+			text: "İndir"
+		});
 		
 		for(var i = 0; i < links.length; i++)
 		{
-			out += `<a class="dropdown-item" href="${links[i].link}" target="_blank">${links[i].title}</a>`;
+			dropdown_menu_div.append($("<a/>",
+			{
+				"class": "dropdown-item",
+				"target": "_blank",
+				"text": links[i].title,
+				"href": links[i].link
+			}));
 		}
 		
-		out += part_2;
+		button_group_div.append(download_button);
+		button_group_div.append(dropdown_menu_div);
 		
-		return out;
+		var stick_to_bottom_div = $("<div/>", {
+			"class": "stick-to-bottom"
+		});
+		
+		stick_to_bottom_div.append(button_group_div);
+		
+		var title_h1 = $("<h1/>", {
+			text: video_title
+		});
+		
+		var category_h4 = $("<h4/>", {
+			text: category
+		});
+		
+		var desc_p = $("<p/>", {
+			"class": "lead",
+			text: video_desc
+		});
+		
+		var container_div = $("<div/>", {
+			"class": "container col-md-8"
+		}).append(title_h1).append(category_h4).append(desc_p).append(stick_to_bottom_div);
+		
+		var image_div = $("<div/>", {
+			"class": "img-container border border-dark col-md-4",
+			"style": `background-image: url(${image_url});`
+		});
+		
+		var row_div = $("<div/>", {
+			"class": "row"
+		}).append(image_div).append(container_div);
+		
+		var jumbotron_div = $("<div/>", {
+			"class": "jumbotron w-100 py-5 mx-auto"
+		}).append(row_div);
+		
+		var flex_div = $("<div/>", {
+			"class": "d-flex my-3"
+		}).append(jumbotron_div);
+		
+		var section_part = $("<section/>", {
+			"class": type + " container"
+		}).append(flex_div);
+		
+		return section_part;
 	},
 
-	get_page_url: function(offset)
+	get_page_url: function(key)
 	{
 		//Gizli playlist url'si. Değişebilir.
-		return `http://cdn.jwplayer.com/v2/playlists/WqmRvXXa?internal=false&page_offset=${offset}&page_limit=500`;
+		return `http://cdn.jwplayer.com/v2/playlists/${key}`;
 	},
 	
 	download_json_data: function(_url)
@@ -76,12 +182,12 @@ var gain = {
 	
 	download_and_parse_data: function()
 	{
-		var data = gain.download_json_data(gain.get_page_url(1));
+		var data = gain.download_json_data(gain.get_page_url('WqmRvXXa'));
 		
 		if(data == null)
 			return false;
 
-		playlist_json = data;
+		main_playlist_json = data;
 
 		var final_div = "";
 			
@@ -104,12 +210,10 @@ var gain = {
 			if(category == undefined)
 				category = "";
 
-            var div = gain.get_div(i, data.playlist[i].image, data.playlist[i].title, category,data.playlist[i].description, links);
+            var div = gain.get_div("main-feed", data.playlist[i].image, data.playlist[i].title, category,data.playlist[i].description, links);
 		    
-		    final_div += div;
+		    $("main").append(div);
 		}
-
-		$("main").html($("main").html() + final_div);
 		
 		return true;
 	},	
@@ -119,9 +223,21 @@ var gain = {
 		if(!gain.download_and_parse_data())
 			return false;
 
-		$("#search-plate").on('input', (e) =>
+		$("#search-input").on('input', function(e)
 		{
-			gain.filter_list($("#search-plate").val());
+			gain.input_changed($(this).val());
+		});
+		
+		$("#search-input").on('keypress', (e) =>
+		{
+			if(e.which == 13) {
+				gain.filter_list();
+			}
+		});
+		
+		$("#search-button").on('click', (e) =>
+		{
+			gain.filter_list();
 		});
 		
 		return true;
