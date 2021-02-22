@@ -1,12 +1,14 @@
 # GainWeb
 Gain.TV Resmi olmayan web uygulaması.
 
-Canlı test-sunucusu: http://xor-yt.ml/gain/
+Canlı test-sunucusu: http://gain-web.ml/
 
 # Özellikler  
  - Basit search sistemi
  - Temiz UI
  - Çoklu kalite seçeneği
+ - Playlist desteği
+ - Paylaşma için arama ve playlist bazlı url sistemi.
 
 # Yapılacaklar
  - Gain.TV login entegreli sistem. (İptal edildi. Şuan login'in herhangi bir implementasyonu yok uygulama tarafında. Olduğunda ekleyebilirim.)  
