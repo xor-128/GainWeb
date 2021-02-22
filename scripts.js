@@ -16,8 +16,7 @@ var gain = {
       });
     },
 
-    filter_list: function() {
-      var search_text = $('#search-input').val();
+    filter_list: function(search_text) {
 
       if (search_text.length <= 0) return;
 
@@ -31,8 +30,11 @@ var gain = {
           $(this).remove();
       });
 
-      var data = gain.download_json_data(gain.get_page_url('1GaoV3X7') + "?search=" + encodeURI(search_text));
-
+      var data = gain.download_json_data(gain.get_page_url('1GaoV3X7') + "&search=" + encodeURI(search_text));
+		
+	  window.history.pushState('index', 'Arama - ' + search_text, '/index.html?search=' + encodeURI(search_text));
+	  document.title = 'Arama - ' + search_text;
+	  
       if (data.playlist?.length <= 0) {
         $('main').children('section').each(function() {
           if ($(this).hasClass('main-feed'))
@@ -61,13 +63,12 @@ var gain = {
           return parseInt(a.title.substr(0, a.title.length - 1)) - parseInt(b.title.substr(0, b.title.length - 1));
         });
 
-        var title = main_playlist_json.playlist[i].title?.toLowerCase();
-        var category = main_playlist_json.playlist[i].contentCategory?.toLowerCase();
+        var category = data.playlist[i].contentCategory?.toLowerCase();
 
         if (category == undefined)
           tags = "";
 
-        var div = gain.get_div("search-item", data.playlist[i].image, data.playlist[i].title, category, data.playlist[i].description, links);
+        var div = gain.get_div("search-item", data.playlist[i].image, data.playlist[i].title, data.playlist[i].contentCategory, data.playlist[i].description, links, data.playlist[i]?.playlistId);
 
         div.css('opacity', 0);
 
@@ -85,7 +86,7 @@ var gain = {
       $('#preloader').delay(100).fadeOut('fast');
     },
 
-    get_div: function(type, image_url, video_title, category, video_desc, links) {
+    get_div: function(type, image_url, video_title, category, video_desc, links, playlistId) {
       var button_group_div = $("<div/>", {
         "class": "btn-group"
       });
@@ -101,8 +102,25 @@ var gain = {
         "data-toggle": "dropdown",
         "aria-haspopup": "true",
         "aria-expanded": "false",
-        text: "İndir"
+        text: "İzle"
       });
+	  
+	  var other_episodes_button = null;
+	  
+	  if(playlistId != null)
+	  {
+		   other_episodes_button = $("<button/>", {
+			"type": "button",
+			"class": "btn btn-danger ml-1 rounded-top rounded-bottom rounded-left rounded-right",
+			"aria-haspopup": "true",
+			"aria-expanded": "false",
+			text: "Diğer bölümler"
+		  });
+		  
+		  other_episodes_button.on('click', (e) => {
+			  document.location = "index.html?playlist=" + playlistId;
+		  });
+	  }
 
       for (var i = 0; i < links.length; i++) {
         dropdown_menu_div.append($("<a/>", {
@@ -115,6 +133,10 @@ var gain = {
 
       button_group_div.append(download_button);
       button_group_div.append(dropdown_menu_div);
+	  if(playlistId != null)
+	  {
+		button_group_div.append(other_episodes_button);
+	  }
 
       var stick_to_bottom_div = $("<div/>", {
         "class": "stick-to-bottom"
@@ -164,7 +186,7 @@ var gain = {
     },
 
     get_page_url: function(key) {
-      return `http://cdn.jwplayer.com/v2/playlists/${key}`;
+      return `http://cdn.jwplayer.com/v2/playlists/${key}?page_limit=500`;
     },
 
     download_json_data: function(_url) {
@@ -182,8 +204,15 @@ var gain = {
       return _data;
     },
 
-    download_and_parse_data: function() {
-      var data = gain.download_json_data(gain.get_page_url('WqmRvXXa'));
+    download_and_parse_data: function(isSearch, playlistIdOrSearchQuery) {
+	  if(isSearch)
+	  {
+		  $('#search-input').val(playlistIdOrSearchQuery);
+		  gain.filter_list(playlistIdOrSearchQuery);
+		  return true;
+	  }
+	  
+      var data = gain.download_json_data(gain.get_page_url(playlistIdOrSearchQuery));
 
       if (data == null)
         return false;
@@ -212,7 +241,7 @@ var gain = {
         if (category == undefined)
           category = "";
 
-        var div = gain.get_div("main-feed", data.playlist[i].image, data.playlist[i].title, category, data.playlist[i].description, links);
+        var div = gain.get_div("main-feed", data.playlist[i].image, data.playlist[i].title, category, data.playlist[i].description, links, data.playlist[i]?.playlistId);
 
         $("main").append(div);
       }
@@ -221,7 +250,11 @@ var gain = {
     },
 
     load_parser: function() {
-      if (!gain.download_and_parse_data())
+	  var url = new URL(document.location);
+	  var search = url.searchParams.get("search");
+	  var playlist = url.searchParams.get("playlist");
+	  
+      if (!gain.download_and_parse_data(search != null, (search == null) ? ((playlist == null) ? 'WqmRvXXa' : playlist) : search))
         return false;
 
       $("#search-input").on('input', function(e) {
@@ -230,12 +263,12 @@ var gain = {
 
       $("#search-input").on('keypress', (e) => {
         if (e.which == 13) {
-          gain.filter_list();
+          gain.filter_list($('#search-input').val());
         }
       });
 
       $("#search-button").on('click', (e) => {
-        gain.filter_list();
+        gain.filter_list($('#search-input').val());
       });
 
       return true;
@@ -250,8 +283,11 @@ var gain = {
         set_preloader_text("Bir hata oluştu. Sayfayı yeniden yükleyin.");
         return;
       }
-
       set_preloader_text("Liste yüklendi.");
+
+      $(".navbar-logo").on('click', (e) => {
+        window.location = 'index.html';
+      });
 
       $('#preloader').delay(100).fadeOut('slow');
     }
